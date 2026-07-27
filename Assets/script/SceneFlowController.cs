@@ -2,7 +2,7 @@ using UnityEngine;
 using UnityEngine.SceneManagement;
 public class SceneFlowController : MonoBehaviour
 {
-    [SerializeField] string nextSceneName = "S2_Question";
+    [SerializeField] string nextSceneName = "S2_RegionSelect";
     bool isLeaving;
     public void GoToNextScene()
     {

@@ -18,8 +18,14 @@ EditorBuildSettings:
     path: Assets/Scenes/S1_TwoFutures.unity
     guid: 19ca2e56fff08464d97f9638fe215f53
   - enabled: 1
-    path: Assets/Scenes/S2_Question.unity
+    path: Assets/Scenes/S2_RegionSelect.unity
     guid: be6359495d8fa9c409fd3fde104b6f72
+  - enabled: 1
+    path: Assets/Scenes/City01.unity
+    guid: 62dff94e382058d4994446f6e1c7de1d
+  - enabled: 1
+    path: Assets/Scenes/Forest01.unity
+    guid: 8e827ce5ffc7f2b4f974e5f4d2fb5a35
   m_configObjects:
     Unity.XR.Oculus.Settings: {fileID: 11400000, guid: bfa1182bd221b4ca89619141f66f1260, type: 2}
     Unity.XR.WindowsMR.Settings: {fileID: 11400000, guid: dc5a169419fa04987b057f65238cf3ba, type: 2}
