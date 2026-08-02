@@ -4,13 +4,32 @@ public class HintController : MonoBehaviour
 {
     [SerializeField] Canvas hintCanvas;
     [SerializeField] float firstShowDelay = 0.5f;
+    [SerializeField] bool autoHide = false;
     [SerializeField] float showDuration = 5f;
     [SerializeField] float remindAfterIdle = 10f;
+
+    [Header("Blink")]
+    [SerializeField] bool blinkWhileVisible = true;
+    [SerializeField] float blinkSpeed = 3f;
+    [SerializeField] float blinkMinAlpha = 0.25f;
+    [SerializeField] float blinkMaxAlpha = 1f;
 
     float showAt;
     float hideAt;
     bool remindQueued = true;
     bool interacted;
+    bool isShowing;
+    CanvasGroup _canvasGroup;
+
+    void Awake()
+    {
+        if (hintCanvas == null)
+            return;
+
+        _canvasGroup = hintCanvas.GetComponent<CanvasGroup>();
+        if (_canvasGroup == null)
+            _canvasGroup = hintCanvas.gameObject.AddComponent<CanvasGroup>();
+    }
 
     void OnEnable()
     {
@@ -37,10 +56,10 @@ public class HintController : MonoBehaviour
         if (showAt > 0f && now >= showAt)
         {
             SetVisible(true);
-            hideAt = now + showDuration;
+            hideAt = autoHide ? now + showDuration : -1f;
             showAt = -1f;
         }
-        else if (hideAt > 0f && now >= hideAt)
+        else if (autoHide && hideAt > 0f && now >= hideAt)
         {
             SetVisible(false);
             hideAt = -1f;
@@ -51,11 +70,22 @@ public class HintController : MonoBehaviour
                 showAt = now + remindAfterIdle;
             }
         }
+
+        if (isShowing && blinkWhileVisible && _canvasGroup != null)
+        {
+            float t = (Mathf.Sin(Time.time * blinkSpeed) + 1f) * 0.5f;
+            _canvasGroup.alpha = Mathf.Lerp(blinkMinAlpha, blinkMaxAlpha, t);
+        }
     }
 
     void SetVisible(bool on)
     {
+        isShowing = on;
+
         if (hintCanvas != null)
             hintCanvas.enabled = on;
+
+        if (_canvasGroup != null)
+            _canvasGroup.alpha = on ? blinkMaxAlpha : 0f;
     }
 }
