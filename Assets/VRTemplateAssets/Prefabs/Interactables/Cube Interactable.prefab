@@ -60,9 +60,9 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_AffordanceStateProvider: {fileID: 5267334546029532960}
-  m_ReplaceIdleStateValueWithInitialValue: 1
+  m_ReplaceIdleStateValueWithInitialValue: 0
   m_AffordanceThemeDatum:
-    m_UseConstant: 0
+    m_UseConstant: 1
     m_ConstantValue:
       m_StateAnimationCurve:
         m_UseConstant: 1
@@ -96,20 +96,20 @@ MonoBehaviour:
         animationStateStartValue: {r: 0, g: 0, b: 0, a: 0}
         animationStateEndValue: {r: 0, g: 0, b: 0, a: 0}
       - stateName: idle
-        animationStateStartValue: {r: 0, g: 0, b: 0, a: 0}
-        animationStateEndValue: {r: 0, g: 0, b: 0, a: 0}
+        animationStateStartValue: {r: 1, g: 0.8, b: 0.2, a: 1}
+        animationStateEndValue: {r: 1, g: 0.8, b: 0.2, a: 1}
       - stateName: hovered
-        animationStateStartValue: {r: 0, g: 0, b: 0, a: 0}
-        animationStateEndValue: {r: 0, g: 0, b: 0, a: 0}
+        animationStateStartValue: {r: 0.7, g: 0.8698113, b: 1, a: 1}
+        animationStateEndValue: {r: 0.69803923, g: 0.87058824, b: 1, a: 1}
       - stateName: hoveredPriority
         animationStateStartValue: {r: 0, g: 0, b: 0, a: 0}
         animationStateEndValue: {r: 0, g: 0, b: 0, a: 0}
       - stateName: selected
-        animationStateStartValue: {r: 0, g: 0, b: 0, a: 0}
-        animationStateEndValue: {r: 0, g: 0, b: 0, a: 0}
+        animationStateStartValue: {r: 0.69803923, g: 0.87058824, b: 1, a: 1}
+        animationStateEndValue: {r: 0.9, g: 0.95714283, b: 1, a: 1}
       - stateName: activated
-        animationStateStartValue: {r: 0, g: 0, b: 0, a: 0}
-        animationStateEndValue: {r: 0, g: 0, b: 0, a: 0}
+        animationStateStartValue: {r: 0.9019608, g: 0.95686275, b: 1, a: 1}
+        animationStateEndValue: {r: 0.9019608, g: 0.95686275, b: 1, a: 1}
       m_ColorBlendMode: 0
       m_BlendAmount: 1
     m_Variable: {fileID: 11400000, guid: 3f64ff74c0b83314ba0d51fd6312625b, type: 2}

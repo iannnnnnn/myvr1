@@ -1,6 +1,7 @@
 using UnityEngine;
 using UnityEngine.UI;
 using UnityEngine.XR;
+using TMPro;
 
 /// <summary>
 /// 單一共用 UI 彈窗：只負責圖文／語音呈現。
@@ -13,8 +14,8 @@ public sealed class UIManager : MonoBehaviour
 
     [Header("Shared Popup")]
     [SerializeField] private Canvas _popupCanvas;
-    [SerializeField] private Text _titleText;
-    [SerializeField] private Text _contentText;
+    [SerializeField] private TMP_Text _titleText;
+    [SerializeField] private TMP_Text _contentText;
     [SerializeField] private Image _image;
     [SerializeField] private AudioSource _audioSource;
 
