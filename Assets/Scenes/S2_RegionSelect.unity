@@ -776,7 +776,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::RegionSelectController
   citySceneName: City01
-  forestSceneName: Forest01
+  forestSceneName: ForestBasic
 --- !u!4 &1528269185
 Transform:
   m_ObjectHideFlags: 0

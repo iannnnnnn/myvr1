@@ -2,8 +2,8 @@ using UnityEngine;
 using UnityEngine.SceneManagement;
 public class RegionSelectController : MonoBehaviour
 {
-    [SerializeField] string citySceneName = "S3_City";
-    [SerializeField] string forestSceneName = "S3_Forest";
+    [SerializeField] string citySceneName = "City01";
+    [SerializeField] string forestSceneName = "ForestBasic";
     bool isLeaving;
     public void SelectCity()
     {
