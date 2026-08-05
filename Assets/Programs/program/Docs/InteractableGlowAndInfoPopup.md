@@ -15,7 +15,7 @@
 
 ## 事前準備
 
-- 場景建議用：`Assets/Scenes/Forest01.unity`
+- 場景建議用：`Assets/Scenes/ForestBasic.unity`（舊範例為 `Forest01`）
 - 場景裡要有：`InfoPopup`  
   路徑：`Assets/Programs/program/Prefabs/UI/InfoPopup.prefab`  
   若 Hierarchy 沒有，從 Project 拖進場景即可
