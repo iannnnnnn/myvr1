@@ -72,3 +72,25 @@ Desktop.ini
 # Local push helper
 _batch_push.ps1
 _batch_push.log
+
+# Local large asset packs not tracked in git
+/Assets/ALP_Assets/
+/Assets/ALP_Assets.meta
+/Assets/Blue Polygon/
+/Assets/Blue Polygon.meta
+/Assets/ForestAnimals/
+/Assets/ForestAnimals.meta
+/Assets/GreenForest/
+/Assets/GreenForest.meta
+/Assets/Tom's Terrain Tools/
+/Assets/Tom's Terrain Tools.meta
+/Assets/Tree_Packs/
+/Assets/Tree_Packs.meta
+/Assets/_TerrainAutoUpgrade/
+/Assets/_TerrainAutoUpgrade.meta
+
+# Local terrain textures generated/imported on this machine
+/Assets/Standard Assets/Environment/TerrainAssets/BillboardTextures/GrassFrond01AlbedoAlpha-tga.tga
+/Assets/Standard Assets/Environment/TerrainAssets/BillboardTextures/GrassFrond01AlbedoAlpha-tga.tga.meta
+/Assets/Standard Assets/Environment/TerrainAssets/BillboardTextures/GrassFrond02AlbedoAlpha-tga.tga
+/Assets/Standard Assets/Environment/TerrainAssets/BillboardTextures/GrassFrond02AlbedoAlpha-tga.tga.meta
