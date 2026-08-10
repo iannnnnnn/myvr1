@@ -88,6 +88,10 @@ _batch_push.log
 /Assets/Tree_Packs.meta
 /Assets/_TerrainAutoUpgrade/
 /Assets/_TerrainAutoUpgrade.meta
+/Assets/GardenTools/
+/Assets/GardenTools.meta
+/Assets/Stylized Tools/
+/Assets/Stylized Tools.meta
 
 # Local terrain textures generated/imported on this machine
 /Assets/Standard Assets/Environment/TerrainAssets/BillboardTextures/GrassFrond01AlbedoAlpha-tga.tga
