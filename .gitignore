@@ -98,3 +98,21 @@ _batch_push.log
 /Assets/Standard Assets/Environment/TerrainAssets/BillboardTextures/GrassFrond01AlbedoAlpha-tga.tga.meta
 /Assets/Standard Assets/Environment/TerrainAssets/BillboardTextures/GrassFrond02AlbedoAlpha-tga.tga
 /Assets/Standard Assets/Environment/TerrainAssets/BillboardTextures/GrassFrond02AlbedoAlpha-tga.tga.meta
+
+# Additional local imports / sample packs not meant for git
+/Assets/TerrainDemoScene_URP/
+/Assets/TerrainDemoScene_URP.meta
+/Assets/TerrainSampleAssets/
+/Assets/TerrainSampleAssets.meta
+/Assets/TheTalesFactory/
+/Assets/TheTalesFactory.meta
+/Assets/WaterWorks/
+/Assets/WaterWorks.meta
+/Assets/Zacxophone/
+/Assets/Zacxophone.meta
+/Assets/TextMesh Pro/Examples & Extras/
+/Assets/TextMesh Pro/Examples & Extras.meta
+
+# Local backup scenes
+/Assets/Scenes/ForestBasic_0812 (1).unity
+/Assets/Scenes/ForestBasic_0812 (1).unity.meta

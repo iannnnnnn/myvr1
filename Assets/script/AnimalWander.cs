@@ -26,14 +26,27 @@ public class AnimalWander : MonoBehaviour
     private NavMeshAgent agent;
     private Animator animator;
 
-    // true 代表動物已經停止平常活動，正在逃跑
+    // true = 動物正在逃跑
     private bool isFleeing;
 
     private void Start()
     {
-        // Animator 和 NavMeshAgent 都在動物最外層
+        // 取得 NavMeshAgent
         agent = GetComponent<NavMeshAgent>();
+
+        // 取得 Animator
         animator = GetComponent<Animator>();
+
+        // 檢查有沒有設定活動區域
+        if (wanderArea == null)
+        {
+            Debug.LogError(
+                gameObject.name +
+                " 沒有設定 Wander Area！"
+            );
+
+            return;
+        }
 
         // 開始平常的隨機活動
         StartCoroutine(WanderLoop());
@@ -41,7 +54,7 @@ public class AnimalWander : MonoBehaviour
 
     private IEnumerator WanderLoop()
     {
-        // 還沒進入逃跑狀態時，持續選擇動作
+        // 沒有逃跑時持續隨機活動
         while (!isFleeing)
         {
             int randomNumber = Random.Range(0, 100);
@@ -51,9 +64,13 @@ public class AnimalWander : MonoBehaviour
                 // 30% 待機
                 yield return DoIdle();
             }
-            else if (canAttack && randomNumber >= 95)
+            else if (
+                canAttack &&
+                randomNumber >= 95
+            )
             {
-                // 可以攻擊的動物有 5% 機率攻擊
+                // 可以攻擊的動物
+                // 有 5% 機率攻擊
                 yield return DoAttack();
             }
             else
@@ -68,36 +85,56 @@ public class AnimalWander : MonoBehaviour
     {
         StopMoving();
 
-        yield return new WaitForSeconds(idleSeconds);
+        yield return new WaitForSeconds(
+            idleSeconds
+        );
     }
 
     private IEnumerator DoWalk()
     {
-        bool foundPoint = TryGetRandomWalkablePoint(
-            out Vector3 destination
-        );
+        // 尋找 Cube 裡可以走的位置
+        bool foundPoint =
+            TryGetRandomWalkablePoint(
+                out Vector3 destination
+            );
 
+        // 找不到位置就這次先不走
         if (!foundPoint)
         {
             yield return null;
             yield break;
         }
 
+        // 設定走路速度
         agent.speed = walkSpeed;
 
-        // 播放走路動畫
-        animator.SetBool("IsWalking", true);
+        // 關閉跑步動畫
+        animator.SetBool(
+            "IsRunning",
+            false
+        );
 
+        // 開啟走路動畫
+        animator.SetBool(
+            "IsWalking",
+            true
+        );
+
+        // 允許 NavMeshAgent 移動
         agent.isStopped = false;
-        agent.SetDestination(destination);
 
-        // Agent 計算路線
+        // 前往隨機位置
+        agent.SetDestination(
+            destination
+        );
+
+        // 等待 Agent 計算路線
         while (agent.pathPending)
         {
             yield return null;
         }
 
-        // 等待動物抵達目的地
+        // 等待動物走到目的地
         while (
             agent.hasPath &&
             agent.remainingDistance >
@@ -107,6 +144,7 @@ public class AnimalWander : MonoBehaviour
             yield return null;
         }
 
+        // 到達後停止
         StopMoving();
     }
 
@@ -114,12 +152,14 @@ public class AnimalWander : MonoBehaviour
     {
         StopMoving();
 
-        animator.SetTrigger("IsAttack");
+        // 播放攻擊動畫
+        animator.SetTrigger(
+            "IsAttack"
+        );
 
-       
         yield return null;
 
-     
+        // 等待進入 Attack 動畫
         while (
             !animator
                 .GetCurrentAnimatorStateInfo(0)
@@ -129,7 +169,7 @@ public class AnimalWander : MonoBehaviour
             yield return null;
         }
 
-
+        // 等待 Attack 動畫結束
         while (
             animator
                 .GetCurrentAnimatorStateInfo(0)
@@ -144,79 +184,161 @@ public class AnimalWander : MonoBehaviour
         out Vector3 destination
     )
     {
-        Bounds areaBounds = wanderArea.bounds;
-
-        // 最多尋找 20 次
-        for (int i = 0; i < 20; i++)
+        // 最多嘗試 30 次
+        for (int i = 0; i < 30; i++)
         {
+            // BoxCollider 的一半大小
+            Vector3 halfSize =
+                wanderArea.size * 0.5f;
+
+            // 稍微離 Cube 邊緣一點
+            float margin = 0.05f;
+
+            // 在 Cube 內隨機 X
             float randomX = Random.Range(
-                areaBounds.min.x,
-                areaBounds.max.x
+                wanderArea.center.x
+                    - halfSize.x
+                    + margin,
+
+                wanderArea.center.x
+                    + halfSize.x
+                    - margin
             );
 
+            // 在 Cube 內隨機 Z
             float randomZ = Random.Range(
-                areaBounds.min.z,
-                areaBounds.max.z
+                wanderArea.center.z
+                    - halfSize.z
+                    + margin,
+
+                wanderArea.center.z
+                    + halfSize.z
+                    - margin
             );
 
-            Vector3 randomPosition = new Vector3(
-                randomX,
-                transform.position.y,
-                randomZ
-            );
+            // 這是 Cube 自己的 Local 座標
+            Vector3 localPosition =
+                new Vector3(
+                    randomX,
+                    wanderArea.center.y,
+                    randomZ
+                );
 
-            // 確認隨機位置附近有 NavMesh
-            bool foundPosition = NavMesh.SamplePosition(
-                randomPosition,
-                out NavMeshHit hit,
-                navMeshSearchRadius,
-                NavMesh.AllAreas
-            );
+            // Local 座標轉成世界座標
+            Vector3 worldPosition =
+                wanderArea.transform
+                    .TransformPoint(
+                        localPosition
+                    );
 
+            // 找這個位置附近的 NavMesh
+            bool foundPosition =
+                NavMesh.SamplePosition(
+                    worldPosition,
+                    out NavMeshHit hit,
+                    navMeshSearchRadius,
+                    agent.areaMask
+                );
+
+            // 附近沒有 NavMesh
             if (!foundPosition)
             {
                 continue;
             }
 
-            // 確認找到的位置仍在活動區域內
-            bool insideArea =
-                hit.position.x >= areaBounds.min.x &&
-                hit.position.x <= areaBounds.max.x &&
-                hit.position.z >= areaBounds.min.z &&
-                hit.position.z <= areaBounds.max.z;
-
-            if (insideArea)
+            // SamplePosition 找到的位置
+            // 如果跑到 Cube 外面就不要
+            if (
+                !IsInsideWanderArea(
+                    hit.position
+                )
+            )
             {
-                destination = hit.position;
-                return true;
+                continue;
             }
+
+            // 找到成功的位置
+            destination = hit.position;
+
+            return true;
         }
 
+        // 30 次都失敗
         destination = transform.position;
+
         return false;
     }
 
-    // 逃跑 Trigger 會呼叫這個函式
+    private bool IsInsideWanderArea(
+        Vector3 worldPosition
+    )
+    {
+        // 世界座標轉成 Cube Local 座標
+        Vector3 localPosition =
+            wanderArea.transform
+                .InverseTransformPoint(
+                    worldPosition
+                );
+
+        Vector3 halfSize =
+            wanderArea.size * 0.5f;
+
+        // 留一點點邊界
+        float margin = 0.05f;
+
+        float minX =
+            wanderArea.center.x
+            - halfSize.x
+            + margin;
+
+        float maxX =
+            wanderArea.center.x
+            + halfSize.x
+            - margin;
+
+        float minZ =
+            wanderArea.center.z
+            - halfSize.z
+            + margin;
+
+        float maxZ =
+            wanderArea.center.z
+            + halfSize.z
+            - margin;
+
+        // 判斷位置是否還在 Cube 裡
+        return
+            localPosition.x >= minX &&
+            localPosition.x <= maxX &&
+            localPosition.z >= minZ &&
+            localPosition.z <= maxZ;
+    }
+
+    // 外部 Trigger 呼叫這個
     public void StartFlee(
         Transform escapePoint,
         bool disappearAfterArrival
     )
     {
-        // Can Flee 沒勾，就完全忽略逃跑指令
+        // 沒有勾 Can Flee
         if (!canFlee)
         {
             return;
         }
 
-        // 已經在逃跑，或沒有指定目的地
-        if (isFleeing || escapePoint == null)
+        // 已經在逃跑
+        // 或沒有逃跑目的地
+        if (
+            isFleeing ||
+            escapePoint == null
+        )
         {
             return;
         }
 
         isFleeing = true;
 
-
+        // 停止原本所有活動
         StopAllCoroutines();
 
         // 開始逃跑
@@ -229,22 +351,22 @@ public class AnimalWander : MonoBehaviour
     }
 
     private IEnumerator FleeToPoint(
-    Transform escapePoint,
-    bool disappearAfterArrival
-)
+        Transform escapePoint,
+        bool disappearAfterArrival
+    )
     {
-        // 停止原本的隨機移動
+        // 停止原本移動
         StopMoving();
 
-        // 尋找逃跑點附近真正位於 NavMesh 上的位置
-        bool foundEscapePosition = NavMesh.SamplePosition(
-            escapePoint.position,
-            out NavMeshHit hit,
-            navMeshSearchRadius,
-            agent.areaMask
-        );
+        // 尋找逃跑點附近的 NavMesh
+        bool foundEscapePosition =
+            NavMesh.SamplePosition(
+                escapePoint.position,
+                out NavMeshHit hit,
+                navMeshSearchRadius,
+                agent.areaMask
+            );
 
-        // 逃跑點附近完全沒有 NavMesh
         if (!foundEscapePosition)
         {
             Debug.LogError(
@@ -255,32 +377,41 @@ public class AnimalWander : MonoBehaviour
             yield break;
         }
 
-        Vector3 destination = hit.position;
+        Vector3 destination =
+            hit.position;
 
-        // 使用逃跑速度
+        // 設定逃跑速度
         agent.speed = fleeSpeed;
 
+        // 關閉走路動畫
+        animator.SetBool(
+            "IsWalking",
+            false
+        );
 
-        animator.SetBool("IsRunning", true);
+        // 開啟跑步動畫
+        animator.SetBool(
+            "IsRunning",
+            true
+        );
 
-        // 允許 Agent 移動
+        // 開始移動
         agent.isStopped = false;
 
-        // 設定第一次目的地
-        agent.SetDestination(destination);
+        // 設定目的地
+        agent.SetDestination(
+            destination
+        );
 
-        // 確認至少曾經成功建立過路線
         bool pathHasStarted = false;
 
-        // 重新嘗試設定路線的計時器
         float retryTimer = 0f;
 
         while (true)
         {
-            // Agent 沒有正在計算路線時才判斷
             if (!agent.pathPending)
             {
-                // 只要曾經出現有效路線，就記錄下來
+                // 曾經成功建立完整路線
                 if (
                     agent.hasPath &&
                     agent.pathStatus ==
@@ -290,26 +421,33 @@ public class AnimalWander : MonoBehaviour
                     pathHasStarted = true;
                 }
 
-                // 計算動物和逃跑點之間的水平距離
-                Vector3 animalPosition = transform.position;
-                Vector3 targetPosition = destination;
+                // 計算水平距離
+                Vector3 animalPosition =
+                    transform.position;
+
+                Vector3 targetPosition =
+                    destination;
 
                 animalPosition.y = 0f;
                 targetPosition.y = 0f;
 
-                float distanceToTarget = Vector3.Distance(
-                    animalPosition,
-                    targetPosition
-                );
+                float distanceToTarget =
+                    Vector3.Distance(
+                        animalPosition,
+                        targetPosition
+                    );
 
                 bool closeEnough =
                     distanceToTarget <=
-                    agent.stoppingDistance + 0.2f;
+                    agent.stoppingDistance
+                    + 0.2f;
 
                 bool hasStopped =
-                    agent.velocity.sqrMagnitude < 0.01f;
+                    agent.velocity
+                        .sqrMagnitude
+                    < 0.01f;
 
-
+                // 確定真的抵達
                 if (
                     pathHasStarted &&
                     closeEnough &&
@@ -319,31 +457,41 @@ public class AnimalWander : MonoBehaviour
                     break;
                 }
 
-                // 判斷目前是否需要重新設定目的地
-                bool noPath = !agent.hasPath;
+                bool noPath =
+                    !agent.hasPath;
 
                 bool invalidPath =
                     agent.pathStatus ==
-                    NavMeshPathStatus.PathInvalid;
+                    NavMeshPathStatus
+                        .PathInvalid;
 
                 bool stuckOnPartialPath =
                     agent.pathStatus ==
-                    NavMeshPathStatus.PathPartial &&
+                    NavMeshPathStatus
+                        .PathPartial
+                    &&
                     hasStopped;
 
+                // 路線出問題時重新嘗試
                 if (
                     noPath ||
                     invalidPath ||
                     stuckOnPartialPath
                 )
                 {
-                    retryTimer += Time.deltaTime;
+                    retryTimer +=
+                        Time.deltaTime;
 
-                    // 每 0.5 秒重新嘗試一次
-                    if (retryTimer >= 0.5f)
+                    if (
+                        retryTimer >= 0.5f
+                    )
                     {
-                        agent.isStopped = false;
-                        agent.SetDestination(destination);
+                        agent.isStopped =
+                            false;
+
+                        agent.SetDestination(
+                            destination
+                        );
 
                         retryTimer = 0f;
                     }
@@ -354,20 +502,28 @@ public class AnimalWander : MonoBehaviour
                 }
             }
 
-            // 下一幀繼續檢查
             yield return null;
         }
 
-        // 確定抵達後才停止
+        // 到達逃跑位置
         StopMoving();
 
+        // 關閉跑步動畫
+        animator.SetBool(
+            "IsRunning",
+            false
+        );
+
+        // 如果設定抵達後消失
         if (disappearAfterArrival)
         {
-            gameObject.SetActive(false);
+            gameObject.SetActive(
+                false
+            );
         }
 
-        // 沒有選擇消失時，
-        // 動物會留在逃跑點並保持 Idle
+        // 沒勾消失的話
+        // 動物就停在逃跑位置
     }
 
     private void StopMoving()
@@ -383,7 +539,15 @@ public class AnimalWander : MonoBehaviour
 
         if (animator != null)
         {
-            animator.SetBool("IsWalking", false);
+            animator.SetBool(
+                "IsWalking",
+                false
+            );
+
+            animator.SetBool(
+                "IsRunning",
+                false
+            );
         }
     }
 }
