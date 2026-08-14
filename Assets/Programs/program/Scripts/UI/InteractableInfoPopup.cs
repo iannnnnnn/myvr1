@@ -14,7 +14,10 @@ public class InteractableInfoPopup : MonoBehaviour
     [SerializeField] string infoTitle;
     [TextArea(2, 6)]
     [SerializeField] string infoContent;
+    [Tooltip("第 1 頁 PNG（介紹內容已畫在圖裡時，只需指定圖片）")]
     [SerializeField] Sprite infoImage;
+    [Tooltip("第 2 頁 PNG，可留空")]
+    [SerializeField] Sprite infoImagePage2;
     [SerializeField] AudioClip infoAudioClip;
 
     [Header("Follow")]
@@ -50,6 +53,6 @@ public class InteractableInfoPopup : MonoBehaviour
             return;
         }
 
-        UIManager.Instance.ShowPopup(infoTitle, infoContent, infoImage, infoAudioClip, transform, popupOffset);
+        UIManager.Instance.ShowPopup(infoTitle, infoContent, infoImage, infoImagePage2, infoAudioClip, transform, popupOffset);
     }
 }

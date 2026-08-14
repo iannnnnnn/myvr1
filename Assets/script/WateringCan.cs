@@ -1,9 +1,12 @@
+using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.XR.Interaction.Toolkit;
 using UnityEngine.XR.Interaction.Toolkit.Interactables;
+using UnityEngine.XR.Interaction.Toolkit.Interactors;
 
 /// <summary>
-/// 澆水壺：握持後按 Activate（Trigger）從壺嘴短距偵測並對 WaterableTree 澆水。
+/// 澆水壺：拿取為開關（Grip 按一下拿起、再按一下放下）；
+/// 澆水仍為按住 Activate（Trigger）噴水。
 /// </summary>
 [DisallowMultipleComponent]
 [RequireComponent(typeof(XRGrabInteractable))]
@@ -31,8 +34,10 @@ public class WateringCan : MonoBehaviour
     XRGrabInteractable _grab;
     bool _isWatering;
     float _nextTickTime;
-    readonly RaycastHit[] _hits = new RaycastHit[8];
-    readonly Collider[] _overlap = new Collider[8];
+    readonly RaycastHit[] _hits = new RaycastHit[16];
+    readonly Collider[] _overlap = new Collider[16];
+    readonly Dictionary<XRBaseInputInteractor, XRBaseInputInteractor.InputTriggerType> _savedSelectTriggers
+        = new Dictionary<XRBaseInputInteractor, XRBaseInputInteractor.InputTriggerType>();
 
     void OnEnable()
     {
@@ -51,6 +56,8 @@ public class WateringCan : MonoBehaviour
         if (_grab == null)
             return;
 
+        _grab.hoverEntered.AddListener(OnHoverEntered);
+        _grab.hoverExited.AddListener(OnHoverExited);
         _grab.activated.AddListener(OnActivated);
         _grab.deactivated.AddListener(OnDeactivated);
         _grab.selectExited.AddListener(OnSelectExited);
@@ -142,9 +149,12 @@ public class WateringCan : MonoBehaviour
         if (_grab == null)
             return;
 
+        _grab.hoverEntered.RemoveListener(OnHoverEntered);
+        _grab.hoverExited.RemoveListener(OnHoverExited);
         _grab.activated.RemoveListener(OnActivated);
         _grab.deactivated.RemoveListener(OnDeactivated);
         _grab.selectExited.RemoveListener(OnSelectExited);
+        RestoreAllSelectTriggers();
         StopWatering();
     }
 
@@ -161,6 +171,31 @@ public class WateringCan : MonoBehaviour
         TryWater(amount);
     }
 
+    void OnHoverEntered(HoverEnterEventArgs args)
+    {
+        // 只有指向／靠近這把壺時，暫時把該手的 Select 改成 Sticky（按一下拿、再按一下放）
+        if (args.interactorObject is not XRBaseInputInteractor inputInteractor)
+            return;
+
+        if (!_savedSelectTriggers.ContainsKey(inputInteractor))
+            _savedSelectTriggers[inputInteractor] = inputInteractor.selectActionTrigger;
+
+        inputInteractor.selectActionTrigger = XRBaseInputInteractor.InputTriggerType.Sticky;
+    }
+
+    void OnHoverExited(HoverExitEventArgs args)
+    {
+        if (args.interactorObject is not XRBaseInputInteractor inputInteractor)
+            return;
+
+        if (args.interactorObject is IXRSelectInteractor selectInteractor &&
+            _grab != null &&
+            _grab.interactorsSelecting.Contains(selectInteractor))
+            return;
+
+        RestoreSelectTrigger(inputInteractor);
+    }
+
     void OnActivated(ActivateEventArgs args)
     {
         if (!_grab.isSelected)
@@ -173,7 +208,13 @@ public class WateringCan : MonoBehaviour
 
     void OnDeactivated(DeactivateEventArgs args) => StopWatering();
 
-    void OnSelectExited(SelectExitEventArgs args) => StopWatering();
+    void OnSelectExited(SelectExitEventArgs args)
+    {
+        StopWatering();
+
+        if (args.interactorObject is XRBaseInputInteractor inputInteractor)
+            RestoreSelectTrigger(inputInteractor);
+    }
 
     void StopWatering()
     {
@@ -181,11 +222,35 @@ public class WateringCan : MonoBehaviour
         SetParticlesPlaying(false);
     }
 
+    void RestoreSelectTrigger(XRBaseInputInteractor inputInteractor)
+    {
+        if (inputInteractor == null)
+            return;
+
+        if (_savedSelectTriggers.TryGetValue(inputInteractor, out var previous))
+        {
+            inputInteractor.selectActionTrigger = previous;
+            _savedSelectTriggers.Remove(inputInteractor);
+        }
+    }
+
+    void RestoreAllSelectTriggers()
+    {
+        foreach (var pair in _savedSelectTriggers)
+        {
+            if (pair.Key != null)
+                pair.Key.selectActionTrigger = pair.Value;
+        }
+
+        _savedSelectTriggers.Clear();
+    }
+
     void TryWater(float amount)
     {
         Vector3 origin = spout.position;
         Vector3 direction = spout.forward;
-        WaterableTree best = null;
+        PlantingZone bestZone = null;
+        WaterableTree bestTree = null;
         float bestDist = float.MaxValue;
 
         int castCount = Physics.SphereCastNonAlloc(
@@ -198,9 +263,9 @@ public class WateringCan : MonoBehaviour
             QueryTriggerInteraction.Collide);
 
         for (int i = 0; i < castCount; i++)
-            ConsiderHit(_hits[i].collider, _hits[i].distance, ref best, ref bestDist);
+            ConsiderHit(_hits[i].collider, _hits[i].distance, ref bestZone, ref bestTree, ref bestDist);
 
-        // 壺嘴已在樹 Collider 內時 SphereCast 會漏掉，用 Overlap 補上
+        // 壺嘴已在 Collider 內時 SphereCast 會漏掉，用 Overlap 補上
         Vector3 overlapCenter = origin + direction * (castDistance * 0.5f);
         float overlapRadius = castRadius + castDistance * 0.5f;
         int overlapCount = Physics.OverlapSphereNonAlloc(
@@ -216,28 +281,62 @@ public class WateringCan : MonoBehaviour
             if (col == null)
                 continue;
             float dist = Vector3.Distance(origin, col.ClosestPoint(origin));
-            ConsiderHit(col, dist, ref best, ref bestDist);
+            ConsiderHit(col, dist, ref bestZone, ref bestTree, ref bestDist);
         }
 
-        if (best != null)
-            best.AddWater(amount);
+        // 優先整區澆水（一區多棵共用進度）
+        if (bestZone != null)
+            bestZone.AddWater(amount);
+        else if (bestTree != null)
+            bestTree.AddWater(amount);
     }
 
-    void ConsiderHit(Collider col, float distance, ref WaterableTree best, ref float bestDist)
+    void ConsiderHit(
+        Collider col,
+        float distance,
+        ref PlantingZone bestZone,
+        ref WaterableTree bestTree,
+        ref float bestDist)
     {
         if (col == null)
             return;
         if (col.transform.IsChildOf(transform))
             return;
 
+        var zone = col.GetComponentInParent<PlantingZone>();
+        if (zone != null)
+        {
+            if (distance < bestDist)
+            {
+                bestDist = distance;
+                bestZone = zone;
+                bestTree = null;
+            }
+            return;
+        }
+
         var tree = col.GetComponentInParent<WaterableTree>();
         if (tree == null)
             return;
 
+        // 樹若在種植區內，改算該區
+        zone = tree.GetComponentInParent<PlantingZone>();
+        if (zone != null)
+        {
+            if (distance < bestDist)
+            {
+                bestDist = distance;
+                bestZone = zone;
+                bestTree = null;
+            }
+            return;
+        }
+
         if (distance < bestDist)
         {
             bestDist = distance;
-            best = tree;
+            bestZone = null;
+            bestTree = tree;
         }
     }
 

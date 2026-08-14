@@ -1,10 +1,13 @@
 using UnityEngine;
+using UnityEngine.XR.Interaction.Toolkit;
+using UnityEngine.XR.Interaction.Toolkit.Interactables;
 
 /// <summary>
 /// 讓可互動物件的材質產生呼吸式發光（Emission 強度隨時間脈動），
 /// 提示玩家「這裡可以點選」。
 /// 使用 MaterialPropertyBlock 修改，不會複製材質、不產生逐幀 GC。
 /// 材質需先開啟 Emission（Standard / URP Lit 皆可）。
+/// 被選取（點擊／Trigger）後預設關閉發光。
 /// </summary>
 [DisallowMultipleComponent]
 public class InteractableGlowHint : MonoBehaviour
@@ -22,10 +25,13 @@ public class InteractableGlowHint : MonoBehaviour
 
     [Header("State")]
     [SerializeField] bool glowing = true;
+    [Tooltip("玩家點擊／Trigger 選取後停止發光")]
+    [SerializeField] bool stopOnSelect = true;
 
     static readonly int EmissionColorId = Shader.PropertyToID("_EmissionColor");
 
     MaterialPropertyBlock _block;
+    IXRSelectInteractable _interactable;
 
     void Awake()
     {
@@ -33,6 +39,26 @@ public class InteractableGlowHint : MonoBehaviour
 
         if (targetRenderers == null || targetRenderers.Length == 0)
             targetRenderers = GetComponentsInChildren<Renderer>();
+
+        _interactable = GetComponent<IXRSelectInteractable>();
+    }
+
+    void OnEnable()
+    {
+        if (_interactable != null)
+            _interactable.selectEntered.AddListener(OnSelectEntered);
+    }
+
+    void OnDisable()
+    {
+        if (_interactable != null)
+            _interactable.selectEntered.RemoveListener(OnSelectEntered);
+    }
+
+    void OnSelectEntered(SelectEnterEventArgs args)
+    {
+        if (stopOnSelect)
+            SetGlowing(false);
     }
 
     void Update()
