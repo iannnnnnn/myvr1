@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using UnityEngine;
 
 /// <summary>
@@ -19,15 +20,28 @@ public class Level4ZoneBootstrap : MonoBehaviour
             return;
         }
 
-        RegisterZones();
+        RegisterTrees();
     }
 
-    void RegisterZones()
+    void RegisterTrees()
     {
+        var list = new List<WaterableTree>();
         var zones = GetComponentsInChildren<PlantingZone>(true);
+        for (int z = 0; z < zones.Length; z++)
+        {
+            var zone = zones[z];
+            if (zone == null || zone.Trees == null)
+                continue;
+            for (int i = 0; i < zone.Trees.Length; i++)
+            {
+                if (zone.Trees[i] != null)
+                    list.Add(zone.Trees[i]);
+            }
+        }
+
         if (timeLapse == null)
             timeLapse = FindFirstObjectByType<ForestTimeLapseController>();
         if (timeLapse != null)
-            timeLapse.SetTargetZones(zones);
+            timeLapse.SetTargetTrees(list.ToArray());
     }
 }

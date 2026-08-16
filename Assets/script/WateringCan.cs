@@ -39,6 +39,34 @@ public class WateringCan : MonoBehaviour
     readonly Dictionary<XRBaseInputInteractor, XRBaseInputInteractor.InputTriggerType> _savedSelectTriggers
         = new Dictionary<XRBaseInputInteractor, XRBaseInputInteractor.InputTriggerType>();
 
+    public Transform Spout => spout;
+    public ParticleSystem WaterParticles => waterParticles;
+
+    /// <summary>從按鈕站複製原本的澆水參數到手上實用壺。</summary>
+    public void CopyTuningFrom(WateringCan source)
+    {
+        if (source == null || source == this)
+            return;
+
+        castRadius = source.castRadius;
+        castDistance = source.castDistance;
+        hitMask = source.hitMask;
+        waterPerSecond = source.waterPerSecond;
+        tickInterval = source.tickInterval;
+        spoutLocalPosition = source.spoutLocalPosition;
+    }
+
+    public void BindWaterParticles(ParticleSystem particles)
+    {
+        waterParticles = particles;
+        if (waterParticles != null)
+        {
+            waterParticles.Stop(true, ParticleSystemStopBehavior.StopEmittingAndClear);
+            var emission = waterParticles.emission;
+            emission.enabled = true;
+        }
+    }
+
     void OnEnable()
     {
         if (_grab == null)
@@ -249,7 +277,6 @@ public class WateringCan : MonoBehaviour
     {
         Vector3 origin = spout.position;
         Vector3 direction = spout.forward;
-        PlantingZone bestZone = null;
         WaterableTree bestTree = null;
         float bestDist = float.MaxValue;
 
@@ -263,7 +290,7 @@ public class WateringCan : MonoBehaviour
             QueryTriggerInteraction.Collide);
 
         for (int i = 0; i < castCount; i++)
-            ConsiderHit(_hits[i].collider, _hits[i].distance, ref bestZone, ref bestTree, ref bestDist);
+            ConsiderHit(_hits[i].collider, _hits[i].distance, ref bestTree, ref bestDist);
 
         // 壺嘴已在 Collider 內時 SphereCast 會漏掉，用 Overlap 補上
         Vector3 overlapCenter = origin + direction * (castDistance * 0.5f);
@@ -281,61 +308,31 @@ public class WateringCan : MonoBehaviour
             if (col == null)
                 continue;
             float dist = Vector3.Distance(origin, col.ClosestPoint(origin));
-            ConsiderHit(col, dist, ref bestZone, ref bestTree, ref bestDist);
+            ConsiderHit(col, dist, ref bestTree, ref bestDist);
         }
 
-        // 優先整區澆水（一區多棵共用進度）
-        if (bestZone != null)
-            bestZone.AddWater(amount);
-        else if (bestTree != null)
+        if (bestTree != null)
             bestTree.AddWater(amount);
     }
 
-    void ConsiderHit(
-        Collider col,
-        float distance,
-        ref PlantingZone bestZone,
-        ref WaterableTree bestTree,
-        ref float bestDist)
+    void ConsiderHit(Collider col, float distance, ref WaterableTree bestTree, ref float bestDist)
     {
         if (col == null)
             return;
         if (col.transform.IsChildOf(transform))
             return;
 
-        var zone = col.GetComponentInParent<PlantingZone>();
-        if (zone != null)
-        {
-            if (distance < bestDist)
-            {
-                bestDist = distance;
-                bestZone = zone;
-                bestTree = null;
-            }
+        // 略過種植區的大範圍 trigger，只澆到實際的樹
+        if (col.GetComponent<PlantingZone>() != null)
             return;
-        }
 
         var tree = col.GetComponentInParent<WaterableTree>();
         if (tree == null)
             return;
 
-        // 樹若在種植區內，改算該區
-        zone = tree.GetComponentInParent<PlantingZone>();
-        if (zone != null)
-        {
-            if (distance < bestDist)
-            {
-                bestDist = distance;
-                bestZone = zone;
-                bestTree = null;
-            }
-            return;
-        }
-
         if (distance < bestDist)
         {
             bestDist = distance;
-            bestZone = null;
             bestTree = tree;
         }
     }

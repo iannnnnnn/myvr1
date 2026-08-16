@@ -116,3 +116,11 @@ _batch_push.log
 # Local backup scenes
 /Assets/Scenes/ForestBasic_0812 (1).unity
 /Assets/Scenes/ForestBasic_0812 (1).unity.meta
+
+# Large local sky / nature packs (keep local only)
+/Assets/AllSkyFree/
+/Assets/AllSkyFree.meta
+/Assets/NatureManufacture Assets/
+/Assets/NatureManufacture Assets.meta
+/Assets/InnerverseInteractive/
+/Assets/InnerverseInteractive.meta

@@ -1,0 +1,14 @@
+fileFormatVersion: 2
+guid: 05ff4c3b935aaa541935219df19af14d
+PrefabImporter:
+  externalObjects: {}
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 191449
+  packageName: Simple Water Shader URP
+  packageVersion: 1.0.0
+  assetPath: Assets/IgniteCoders/Simple Water Shader/Prefabs/WaterBlock_50m.prefab
+  uploadId: 422776

@@ -3,8 +3,7 @@ using UnityEngine;
 using UnityEngine.UI;
 
 /// <summary>
-/// 種植小區：約 5 棵同種樹共用一條進度條。
-/// 澆到區內任一棵（或區碰撞）→ 整區進度增加；條滿 → 區內樹一起長大一階。
+/// 種植小區：編輯／擺放用的樹叢分組。目前每棵樹各自澆水長大（進度條暫不使用）。
 /// </summary>
 [DisallowMultipleComponent]
 public class PlantingZone : MonoBehaviour
@@ -18,14 +17,15 @@ public class PlantingZone : MonoBehaviour
     [SerializeField] int treeCount = 5;
     [SerializeField] float clusterRadius = 2.2f;
 
-    [Header("Zone Water")]
+    [Header("Zone Water (暫不使用)")]
     [SerializeField] float waterPerStage = 1f;
     [SerializeField] Image progressFill;
-    [SerializeField] bool createProgressUiIfMissing = true;
+    [SerializeField] bool createProgressUiIfMissing = false;
     [SerializeField] Vector3 progressLocalPosition = new Vector3(0f, 3.5f, 0f);
 
     [Header("Hit Volume")]
-    [SerializeField] bool ensureZoneCollider = true;
+    [Tooltip("整區大碰撞會干擾單棵澆水，預設關閉")]
+    [SerializeField] bool ensureZoneCollider = false;
     [SerializeField] float zoneColliderRadius = 3.5f;
 
     float _waterAccumulated;
@@ -56,7 +56,8 @@ public class PlantingZone : MonoBehaviour
         CollectTreesIfNeeded();
         ConfigureTrees();
         EnsureZoneCollider();
-        EnsureProgressUi();
+        if (createProgressUiIfMissing)
+            EnsureProgressUi();
         NotifyProgress();
     }
 
@@ -64,7 +65,8 @@ public class PlantingZone : MonoBehaviour
     {
         CollectTreesIfNeeded();
         ConfigureTrees();
-        EnsureProgressUi();
+        if (createProgressUiIfMissing)
+            EnsureProgressUi();
         NotifyProgress();
     }
 
@@ -171,21 +173,27 @@ public class PlantingZone : MonoBehaviour
         if (trees == null)
             return;
 
+        // 每棵樹各自澆水長大
         for (int i = 0; i < trees.Length; i++)
         {
             if (trees[i] != null)
-                trees[i].AdvanceStagesOnWater = false;
+                trees[i].AdvanceStagesOnWater = true;
         }
     }
 
     void EnsureZoneCollider()
     {
-        if (!ensureZoneCollider)
-            return;
-
         var sphere = GetComponent<SphereCollider>();
+        if (!ensureZoneCollider)
+        {
+            if (sphere != null)
+                sphere.enabled = false;
+            return;
+        }
+
         if (sphere == null)
             sphere = gameObject.AddComponent<SphereCollider>();
+        sphere.enabled = true;
         sphere.isTrigger = true;
         sphere.center = new Vector3(0f, 1f, 0f);
         sphere.radius = zoneColliderRadius;
@@ -223,7 +231,7 @@ public class PlantingZone : MonoBehaviour
 
             var tree = treeGo.GetComponent<WaterableTree>();
             if (tree != null)
-                tree.AdvanceStagesOnWater = false;
+                tree.AdvanceStagesOnWater = true;
             trees[i] = tree;
         }
     }

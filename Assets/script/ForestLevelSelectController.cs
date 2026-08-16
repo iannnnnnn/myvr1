@@ -21,6 +21,15 @@ public class ForestLevelSelectController : MonoBehaviour
     [SerializeField] ForestLevelCamera[] levels;
     [SerializeField] bool hideMarkersAfterSelect = true;
 
+    [Header("Intro Popup")]
+    [Tooltip("選完關卡後跳出的介紹圖（整張 PNG 當卡片）；留空則不跳出")]
+    [SerializeField] Sprite introImage;
+    [Tooltip("介紹圖第 2 頁，可留空")]
+    [SerializeField] Sprite introImagePage2;
+    [SerializeField] AudioClip introAudio;
+    [Tooltip("介紹圖相對落點的本地偏移（z 為玩家正前方）")]
+    [SerializeField] Vector3 introOffset = new Vector3(0f, 1.4f, 1.5f);
+
     bool _hasSelected;
     float _defaultCastDistance = 10f;
     float _defaultVisualDistance = 10f;
@@ -94,8 +103,25 @@ public class ForestLevelSelectController : MonoBehaviour
         SetOverviewCastRange(false);
         SetLocomotionEnabled(true);
 
+        ShowIntroPopup(fp);
+
         if (hideMarkersAfterSelect)
             SetMarkersVisible(false);
+    }
+
+    /// <summary>落點前方跳出關卡介紹圖；沿用共用彈窗，UIManager 會自動面向攝影機。</summary>
+    void ShowIntroPopup(Transform anchor)
+    {
+        if (introImage == null || anchor == null)
+            return;
+
+        if (UIManager.Instance == null)
+        {
+            Debug.LogWarning("場景中找不到 UIManager，無法顯示關卡介紹。", this);
+            return;
+        }
+
+        UIManager.Instance.ShowPopup(string.Empty, string.Empty, introImage, introImagePage2, introAudio, anchor, introOffset);
     }
 
     void SetOverviewCastRange(bool overview)

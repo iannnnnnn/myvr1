@@ -1,5 +1,8 @@
+using System.IO;
 using UnityEditor;
+using UnityEditor.SceneManagement;
 using UnityEngine;
+using UnityEngine.XR.Interaction.Toolkit.Interactables;
 
 /// <summary>
 /// 把樹木／澆水壺模型正式嵌進 Prefab，讓 Scene 編輯模式也能看到。
@@ -9,6 +12,8 @@ public static class ForestLevel4PrefabBuilder
 {
     const string GrowableTreePath = "Assets/Prefabs/ForestLevel4/GrowableTree.prefab";
     const string WateringCanPath = "Assets/Prefabs/ForestLevel4/WateringCan_XR.prefab";
+    const string ForestBasicScene = "Assets/Scenes/ForestBasic.unity";
+    const string ConvertStationFlagPath = "Temp/convert_watering_station.flag";
 
     static readonly string[] StagePrefabPaths =
     {
@@ -37,6 +42,129 @@ public static class ForestLevel4PrefabBuilder
     static void ScheduleMaterialUpgrade()
     {
         EditorApplication.delayCall += UpgradeMaterialsToUrp;
+        EditorApplication.delayCall += TryConsumeConvertStationFlag;
+        AssemblyReloadEvents.afterAssemblyReload += () =>
+            EditorApplication.delayCall += TryConsumeConvertStationFlag;
+    }
+
+    static void TryConsumeConvertStationFlag()
+    {
+        if (EditorApplication.isPlayingOrWillChangePlaymode)
+            return;
+
+        string flagPath = Path.GetFullPath(ConvertStationFlagPath);
+        if (!File.Exists(flagPath))
+            return;
+
+        try
+        {
+            File.Delete(flagPath);
+        }
+        catch
+        {
+            return;
+        }
+
+        ConvertSceneWateringCanToStationButton();
+    }
+
+    [MenuItem("Tools/Forest Level4/Convert Watering Can To Station Button")]
+    public static void ConvertSceneWateringCanToStationButton()
+    {
+        var scene = EditorSceneManager.OpenScene(ForestBasicScene, OpenSceneMode.Single);
+        var prefab = AssetDatabase.LoadAssetAtPath<GameObject>(WateringCanPath);
+        if (prefab == null)
+        {
+            Debug.LogError("找不到 WateringCan_XR prefab。");
+            return;
+        }
+
+        GameObject stationGo = null;
+        var all = Object.FindObjectsByType<Transform>(FindObjectsSortMode.None);
+        for (int i = 0; i < all.Length; i++)
+        {
+            if (all[i] != null && all[i].name == "WateringCan_XR")
+            {
+                stationGo = all[i].gameObject;
+                break;
+            }
+        }
+
+        if (stationGo == null)
+        {
+            Debug.LogError("ForestBasic 找不到 WateringCan_XR。");
+            return;
+        }
+
+        // 關掉可抓／澆水元件（場景覆寫）
+        var grab = stationGo.GetComponent<XRGrabInteractable>();
+        if (grab != null)
+            grab.enabled = false;
+
+        var watering = stationGo.GetComponent<WateringCan>();
+        if (watering != null)
+            watering.enabled = false;
+
+        var toolGrab = stationGo.GetComponent<ToolGrabController>();
+        if (toolGrab != null)
+            toolGrab.enabled = false;
+
+        var rb = stationGo.GetComponent<Rigidbody>();
+        if (rb != null)
+        {
+            rb.isKinematic = true;
+            rb.useGravity = false;
+        }
+
+        if (stationGo.GetComponent<XRSimpleInteractable>() == null)
+            stationGo.AddComponent<XRSimpleInteractable>();
+
+        var station = stationGo.GetComponent<WateringCanStationButton>();
+        if (station == null)
+            station = stationGo.AddComponent<WateringCanStationButton>();
+
+        var so = new SerializedObject(station);
+        so.FindProperty("heldCanPrefab").objectReferenceValue = prefab;
+        so.FindProperty("heldLocalScale").vector3Value = new Vector3(0.015f, 0.015f, 0.025f);
+
+        var spray = stationGo.transform.Find("Spout/SprayWater")
+                     ?? stationGo.transform.Find("SprayWater");
+        if (spray != null)
+            so.FindProperty("waterParticleTemplate").objectReferenceValue =
+                spray.GetComponent<ParticleSystem>();
+
+        so.FindProperty("buttonScaleMultiplier").floatValue = 1.75f;
+        so.FindProperty("applyScaleOnAwake").boolValue = false;
+        so.FindProperty("enableGlow").boolValue = true;
+        so.FindProperty("addPulseLight").boolValue = true;
+        so.FindProperty("convertGrabToButtonOnAwake").boolValue = true;
+        so.ApplyModifiedPropertiesWithoutUndo();
+
+        var floating = stationGo.GetComponent<ToolFloatingDisplay>();
+        if (floating != null)
+        {
+            var fso = new SerializedObject(floating);
+            fso.FindProperty("rotateOnStart").boolValue = true;
+            fso.FindProperty("enableFloating").boolValue = true;
+            fso.ApplyModifiedPropertiesWithoutUndo();
+            EditorUtility.SetDirty(floating);
+        }
+
+        // 按鈕站放大（約 1.75x 原場景尺度）
+        Undo.RecordObject(stationGo.transform, "Scale watering station");
+        stationGo.transform.localScale = new Vector3(0.026f, 0.026f, 0.044f);
+
+        EditorUtility.SetDirty(station);
+        EditorUtility.SetDirty(stationGo);
+        EditorSceneManager.MarkSceneDirty(scene);
+        EditorSceneManager.SaveScene(scene);
+
+        Debug.Log("Forest Level4: WateringCan_XR 已轉成漂浮按鈕站（按一下生成右手壺）。");
+        if (!Application.isBatchMode)
+            EditorUtility.DisplayDialog(
+                "Forest Level4",
+                "場景灑水壺已改成按鈕站：\n放大＋發光漂浮\n按一下 → 右手拿到可澆水壺\n再按 → 收回",
+                "OK");
     }
 
     [MenuItem("Tools/Forest Level4/Fix Pink Materials (URP)")]

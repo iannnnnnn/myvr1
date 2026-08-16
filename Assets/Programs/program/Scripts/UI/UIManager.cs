@@ -282,7 +282,12 @@ public sealed class UIManager : MonoBehaviour
     private void ApplyLayout(bool imageAsCard)
     {
         if (_panelImage != null)
+        {
             _panelImage.enabled = !imageAsCard;
+            _panelImage.color = imageAsCard
+                ? new Color(0f, 0f, 0f, 0f)
+                : new Color(0.08f, 0.1f, 0.14f, 0.92f);
+        }
 
         if (_image == null)
             return;
