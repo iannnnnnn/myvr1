@@ -1,7 +1,7 @@
 using UnityEngine;
 
 /// <summary>
-/// 森林縮時：種植區進度條滿、整區長大一階後，播太陽日夜（2 秒 × 3 輪）並推進年份。
+/// 森林縮時：樹木長大一階後，播太陽日夜（2 秒 × 3 輪）並推進年份。
 /// </summary>
 [DisallowMultipleComponent]
 public class ForestTimeLapseController : MonoBehaviour
@@ -9,16 +9,19 @@ public class ForestTimeLapseController : MonoBehaviour
     [SerializeField] SunDayNightCycle sunCycle;
 
     [Header("Goal")]
-    [Tooltip("要監聽的種植區；有值時優先用區事件（一區長大只觸發一次縮時）")]
+    [Tooltip("舊版整區共用澆水；目前預設關閉，改聽每棵樹")]
+    [SerializeField] bool useSharedZoneWatering;
+
+    [Tooltip("僅在 useSharedZoneWatering 時使用")]
     [SerializeField] PlantingZone[] targetZones;
 
-    [Tooltip("要監聽的樹；targetZones 為空時才用。留空則自動找場景內所有 WaterableTree")]
+    [Tooltip("要監聽的樹；留空則自動找場景內所有 WaterableTree")]
     [SerializeField] WaterableTree[] targetTrees;
 
     [Tooltip("本回合需要幾次「階段前進」才觸發縮時")]
     [SerializeField] int advancesPerTimeLapse = 1;
 
-    [Tooltip("false=條滿立刻長大（第四關進度條模式）；true=延到第一次日出")]
+    [Tooltip("false=澆滿立刻長大；true=延到第一次日出")]
     [SerializeField] bool deferTreeGrowthToFirstSunrise;
 
     [Header("Year")]
@@ -74,6 +77,7 @@ public class ForestTimeLapseController : MonoBehaviour
     {
         Subscribe(false);
         targetZones = zones ?? System.Array.Empty<PlantingZone>();
+        useSharedZoneWatering = true;
         deferTreeGrowthToFirstSunrise = false;
         ResolveTargets();
         ApplyDeferGrowthFlags();
@@ -84,6 +88,7 @@ public class ForestTimeLapseController : MonoBehaviour
     public void SetTargetTrees(WaterableTree[] trees)
     {
         Subscribe(false);
+        useSharedZoneWatering = false;
         targetTrees = trees ?? System.Array.Empty<WaterableTree>();
         deferTreeGrowthToFirstSunrise = false;
         ApplyDeferGrowthFlags();
@@ -91,22 +96,12 @@ public class ForestTimeLapseController : MonoBehaviour
             Subscribe(true);
     }
 
-    bool UseZones => targetZones != null && targetZones.Length > 0;
+    bool UseZones => useSharedZoneWatering && targetZones != null && targetZones.Length > 0;
 
     void ResolveTargets()
     {
         if (UseZones)
             return;
-
-        if (targetZones == null || targetZones.Length == 0)
-        {
-            var zones = FindObjectsByType<PlantingZone>(FindObjectsSortMode.None);
-            if (zones != null && zones.Length > 0)
-            {
-                targetZones = zones;
-                return;
-            }
-        }
 
         if (targetTrees != null && targetTrees.Length > 0)
             return;
@@ -116,7 +111,6 @@ public class ForestTimeLapseController : MonoBehaviour
 
     void ApplyDeferGrowthFlags()
     {
-        // 種植區模式：樹不自己長大，由 PlantingZone 統一推進
         if (UseZones)
         {
             for (int z = 0; z < targetZones.Length; z++)

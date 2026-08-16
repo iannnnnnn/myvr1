@@ -141,6 +141,27 @@ public class WateringCan : MonoBehaviour
         spout = go.transform;
     }
 
+    public Transform Spout => spout;
+    public ParticleSystem WaterParticles => waterParticles;
+
+    public void BindWaterParticles(ParticleSystem ps)
+    {
+        waterParticles = ps;
+    }
+
+    public void CopyTuningFrom(WateringCan source)
+    {
+        if (source == null)
+            return;
+
+        spoutLocalPosition = source.spoutLocalPosition;
+        castRadius = source.castRadius;
+        castDistance = source.castDistance;
+        hitMask = source.hitMask;
+        waterPerSecond = source.waterPerSecond;
+        tickInterval = source.tickInterval;
+    }
+
     void OnDisable()
     {
         if (!Application.isPlaying)

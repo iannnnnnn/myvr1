@@ -3,7 +3,13 @@ guid: 874e30af26c84b1d8ea7a79e439c04cf
 MonoImporter:
   externalObjects: {}
   serializedVersion: 2
-  defaultReferences: []
+  defaultReferences:
+  - xrOrigin: {instanceID: 0}
+  - locomotionRoot: {instanceID: 0}
+  - overviewPoint: {instanceID: 0}
+  - introImage: {fileID: 21300000, guid: 6dc9440999d616d46bdf7a285b685d68, type: 3}
+  - introImagePage2: {instanceID: 0}
+  - introAudio: {instanceID: 0}
   executionOrder: 0
   icon: {instanceID: 0}
   userData: 
