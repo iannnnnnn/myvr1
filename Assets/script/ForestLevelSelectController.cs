@@ -24,6 +24,8 @@ public class ForestLevelSelectController : MonoBehaviour
     bool _hasSelected;
     float _defaultCastDistance = 10f;
     float _defaultVisualDistance = 10f;
+    LineDynamicsMode[] _defaultLineDynamics;
+    bool[] _defaultExtendToEmptyHit;
     CurveInteractionCaster[] _casters;
     CurveVisualController[] _visuals;
     bool _castCached;
@@ -55,8 +57,20 @@ public class ForestLevelSelectController : MonoBehaviour
 
         if (_casters != null && _casters.Length > 0)
             _defaultCastDistance = _casters[0].castDistance;
+
         if (_visuals != null && _visuals.Length > 0)
+        {
             _defaultVisualDistance = _visuals[0].maxVisualCurveDistance;
+            _defaultLineDynamics = new LineDynamicsMode[_visuals.Length];
+            _defaultExtendToEmptyHit = new bool[_visuals.Length];
+            for (int i = 0; i < _visuals.Length; i++)
+            {
+                if (_visuals[i] == null)
+                    continue;
+                _defaultLineDynamics[i] = _visuals[i].lineDynamicsMode;
+                _defaultExtendToEmptyHit[i] = _visuals[i].extendLineToEmptyHit;
+            }
+        }
 
         _castCached = true;
     }
@@ -65,9 +79,8 @@ public class ForestLevelSelectController : MonoBehaviour
     {
         _hasSelected = false;
 
-        if (xrOrigin != null && overviewPoint != null)
-            xrOrigin.SetPositionAndRotation(overviewPoint.position, overviewPoint.rotation);
-
+        // VR 裡不能把 XR Origin 整組 pitch/roll，否則追蹤空間傾斜，射線會扎進地面或看不到
+        PlaceXrOrigin(overviewPoint, yawOnly: true);
         SetLocomotionEnabled(false);
         SetMarkersVisible(true);
         SetOverviewCastRange(true);
@@ -90,12 +103,27 @@ public class ForestLevelSelectController : MonoBehaviour
             return;
 
         _hasSelected = true;
-        xrOrigin.SetPositionAndRotation(fp.position, fp.rotation);
+        PlaceXrOrigin(fp, yawOnly: true);
         SetOverviewCastRange(false);
         SetLocomotionEnabled(true);
 
         if (hideMarkersAfterSelect)
             SetMarkersVisible(false);
+    }
+
+    void PlaceXrOrigin(Transform point, bool yawOnly)
+    {
+        if (xrOrigin == null || point == null)
+            return;
+
+        if (yawOnly)
+        {
+            float yaw = point.eulerAngles.y;
+            xrOrigin.SetPositionAndRotation(point.position, Quaternion.Euler(0f, yaw, 0f));
+            return;
+        }
+
+        xrOrigin.SetPositionAndRotation(point.position, point.rotation);
     }
 
     void SetOverviewCastRange(bool overview)
@@ -119,8 +147,34 @@ public class ForestLevelSelectController : MonoBehaviour
         {
             for (int i = 0; i < _visuals.Length; i++)
             {
-                if (_visuals[i] != null)
-                    _visuals[i].maxVisualCurveDistance = visual;
+                if (_visuals[i] == null)
+                    continue;
+
+                _visuals[i].maxVisualCurveDistance = visual;
+
+                // 俯瞰時強制顯示長射線，避免 RetractOnHitLoss 把線縮到幾乎看不見
+                if (overview)
+                {
+                    _visuals[i].lineDynamicsMode = LineDynamicsMode.Traditional;
+                    _visuals[i].extendLineToEmptyHit = true;
+                    if (_visuals[i].noValidHitProperties != null)
+                    {
+                        _visuals[i].noValidHitProperties.startWidth = 0.02f;
+                        _visuals[i].noValidHitProperties.endWidth = 0.02f;
+                    }
+                }
+                else
+                {
+                    if (_defaultLineDynamics != null && i < _defaultLineDynamics.Length)
+                        _visuals[i].lineDynamicsMode = _defaultLineDynamics[i];
+                    if (_defaultExtendToEmptyHit != null && i < _defaultExtendToEmptyHit.Length)
+                        _visuals[i].extendLineToEmptyHit = _defaultExtendToEmptyHit[i];
+                    if (_visuals[i].noValidHitProperties != null)
+                    {
+                        _visuals[i].noValidHitProperties.startWidth = 0.003f;
+                        _visuals[i].noValidHitProperties.endWidth = 0.003f;
+                    }
+                }
             }
         }
     }

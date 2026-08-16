@@ -144,10 +144,16 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::UIManager
   _popupCanvas: {fileID: 200003}
+  _panelImage: {fileID: 210004}
   _titleText: {fileID: 300004}
   _contentText: {fileID: 400004}
   _image: {fileID: 500004}
   _audioSource: {fileID: 100003}
+  _prevButton: {fileID: 0}
+  _nextButton: {fileID: 0}
+  _useImageAsCard: 1
+  _chromaKeyMaterial: {fileID: 2100000, guid: 6d7e8f901234567890abcdef01234567, type: 2}
+  _imageCardPadding: {x: 12, y: 72}
   _defaultFollowOffset: {x: 0, y: 1.6, z: 0}
   _faceCamera: 1
   _dismissCooldown: 0.5
@@ -181,7 +187,7 @@ RectTransform:
   m_GameObject: {fileID: 200001}
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 0}
-  m_LocalScale: {x: 0.0015, y: 0.0015, z: 0.0015}
+  m_LocalScale: {x: 0.00125, y: 0.00125, z: 0.00125}
   m_ConstrainProportionsScale: 1
   m_Children:
   - {fileID: 210002}
@@ -190,7 +196,7 @@ RectTransform:
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
   m_AnchoredPosition: {x: 0, y: 0}
-  m_SizeDelta: {x: 520, y: 360}
+  m_SizeDelta: {x: 960, y: 540}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!223 &200003
 Canvas:
@@ -371,7 +377,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!224 &300002
 RectTransform:
   m_ObjectHideFlags: 0
@@ -508,7 +514,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!224 &400002
 RectTransform:
   m_ObjectHideFlags: 0
@@ -660,10 +666,10 @@ RectTransform:
   m_Children: []
   m_Father: {fileID: 210002}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
-  m_AnchorMin: {x: 0.5, y: 0.5}
-  m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: 0, y: 40}
-  m_SizeDelta: {x: 180, y: 120}
+  m_AnchorMin: {x: 0, y: 0}
+  m_AnchorMax: {x: 1, y: 1}
+  m_AnchoredPosition: {x: 0, y: 30}
+  m_SizeDelta: {x: -24, y: -84}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!222 &500003
 CanvasRenderer:
@@ -685,7 +691,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: fe87c0e1cc204ed48ad3b37840f39efc, type: 3}
   m_Name: 
   m_EditorClassIdentifier: UnityEngine.UI::UnityEngine.UI.Image
-  m_Material: {fileID: 0}
+  m_Material: {fileID: 2100000, guid: 6d7e8f901234567890abcdef01234567, type: 2}
   m_Color: {r: 1, g: 1, b: 1, a: 1}
   m_RaycastTarget: 0
   m_RaycastPadding: {x: 0, y: 0, z: 0, w: 0}
