@@ -7,8 +7,8 @@ ShaderIncludeImporter:
   assetBundleVariant: 
 AssetOrigin:
   serializedVersion: 1
-  productId: 145808
-  packageName: Terrain Sample Asset Pack
-  packageVersion: 2.0.1
+  productId: 213197
+  packageName: Unity Terrain - URP Demo Scene
+  packageVersion: 
   assetPath: Assets/TerrainSampleAssets/ShaderGraphs/CustomFunctions/CustomLighting.hlsl
-  uploadId: 511657
+  uploadId: 0
