@@ -311,19 +311,28 @@ public sealed class UIManager : MonoBehaviour
         }
     }
 
+    /// <summary>
+    /// 偏移以世界公尺計算，不受目標物件縮放影響：
+    /// x 為玩家視角的右方、y 為世界上方、z 為朝玩家拉近的距離。
+    /// </summary>
     private void UpdateFollowTransform()
     {
         if (_followTarget == null || _popupRoot == null)
             return;
 
-        _popupRoot.position = _followTarget.TransformPoint(_followOffset);
-
-        if (!_faceCamera)
-            return;
-
         if (_mainCamera == null)
             _mainCamera = Camera.main;
-        if (_mainCamera == null)
+
+        Vector3 basePosition = _followTarget.position;
+        Vector3 towardCamera = ResolveTowardCameraDirection(basePosition);
+        Vector3 right = Vector3.Cross(Vector3.up, towardCamera);
+
+        _popupRoot.position = basePosition
+            + right * _followOffset.x
+            + Vector3.up * _followOffset.y
+            + towardCamera * _followOffset.z;
+
+        if (!_faceCamera || _mainCamera == null)
             return;
 
         Vector3 toCamera = _mainCamera.transform.position - _popupRoot.position;
@@ -332,6 +341,26 @@ public sealed class UIManager : MonoBehaviour
 
         // Canvas 正面朝向攝影機（forward 背對鏡頭）；IgnoreReversedGraphics 已關，Close 仍可點
         _popupRoot.rotation = Quaternion.LookRotation(-toCamera.normalized, Vector3.up);
+    }
+
+    /// <summary>水平方向的「由物件指向玩家」；玩家幾乎站在基準點上時改用視線方向。</summary>
+    private Vector3 ResolveTowardCameraDirection(Vector3 basePosition)
+    {
+        if (_mainCamera != null)
+        {
+            Vector3 toCamera = _mainCamera.transform.position - basePosition;
+            Vector3 flat = new Vector3(toCamera.x, 0f, toCamera.z);
+            if (flat.sqrMagnitude > 0.01f)
+                return flat.normalized;
+
+            Vector3 look = _mainCamera.transform.forward;
+            Vector3 lookFlat = new Vector3(look.x, 0f, look.z);
+            if (lookFlat.sqrMagnitude > 0.0001f)
+                return lookFlat.normalized;
+        }
+
+        Vector3 fallback = new Vector3(_followTarget.forward.x, 0f, _followTarget.forward.z);
+        return fallback.sqrMagnitude > 0.0001f ? fallback.normalized : Vector3.forward;
     }
 
     /// <summary>

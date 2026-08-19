@@ -54,6 +54,7 @@ public class ForestLevelSelectController : MonoBehaviour
         }
 
         CacheCasters();
+        EnsurePhysicsDebugOnCasters();
         EnterOverview();
     }
 
@@ -68,6 +69,25 @@ public class ForestLevelSelectController : MonoBehaviour
             _defaultVisualDistance = _visuals[0].maxVisualCurveDistance;
 
         _castCached = true;
+    }
+
+    void EnsurePhysicsDebugOnCasters()
+    {
+        if (_casters == null)
+            return;
+
+        for (int i = 0; i < _casters.Length; i++)
+        {
+            var caster = _casters[i];
+            if (caster == null)
+                continue;
+
+            var debug = caster.GetComponent<PhysicsRayDebug>();
+            if (debug == null)
+                debug = caster.gameObject.AddComponent<PhysicsRayDebug>();
+
+            debug.Configure(caster.transform, 0.1f, Physics.DefaultRaycastLayers, QueryTriggerInteraction.Collide);
+        }
     }
 
     public void EnterOverview()

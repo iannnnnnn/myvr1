@@ -94,6 +94,7 @@ public class ForestLevelCamera : MonoBehaviour
 
     void OnHoverEntered(HoverEnterEventArgs args)
     {
+        Debug.Log($"[XR Ray] 指到 → {name}（關卡 {levelIndex + 1}）", this);
         pulseSpeed = 6f;
         if (iconImage != null)
             iconImage.transform.localScale = Vector3.one * 1.15f;
@@ -101,6 +102,7 @@ public class ForestLevelCamera : MonoBehaviour
 
     void OnHoverExited(HoverExitEventArgs args)
     {
+        Debug.Log($"[XR Ray] 離開 → {name}（關卡 {levelIndex + 1}）", this);
         pulseSpeed = 2f;
         if (iconImage != null)
             iconImage.transform.localScale = Vector3.one;
@@ -117,6 +119,7 @@ public class ForestLevelCamera : MonoBehaviour
 
     void OnSelectEntered(SelectEnterEventArgs args)
     {
+        Debug.Log($"[XR Ray] Trigger 選取 → {name}（關卡 {levelIndex + 1}）", this);
         if (controller != null)
             controller.SelectLevel(levelIndex);
     }
