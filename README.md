@@ -45,51 +45,51 @@ Build Settings 已啟用：`S1`、`ForestBasic`。S1 的 `SceneFlowController.ne
 
 | Package | 版本 | 用途 |
 |---------|------|------|
-| Universal RP | `com.unity.render-pipelines.universal` 17.5.0 | 渲染管线 |
-| Shader Graph | `com.unity.shadergraph` 17.5.0 | URP 依赖；地形草 Shader |
+| Universal RP | `com.unity.render-pipelines.universal` 17.5.0 | 渲染管線 |
+| Shader Graph | `com.unity.shadergraph` 17.5.0 | URP 依賴；地形草 Shader |
 | UGUI | `com.unity.ugui` 2.5.0 | Canvas、Image、Button |
-| Input System | `com.unity.inputsystem` 1.19.0 | XR 输入（XRI 依赖） |
-| XR Interaction Toolkit | `com.unity.xr.interaction.toolkit` 3.5.1 | VR 互动核心 |
-| XR Core Utils | `com.unity.xr.core-utils` 2.6.0 | XRI 依赖 |
-| XR Management | `com.unity.xr.management` 4.5.4 | XR 插件管理 |
-| OpenXR Plugin | `com.unity.xr.openxr` 1.17.1 | 头显 / OpenXR |
+| Input System | `com.unity.inputsystem` 1.19.0 | XR 輸入（XRI 依賴） |
+| XR Interaction Toolkit | `com.unity.xr.interaction.toolkit` 3.5.1 | VR 互動核心 |
+| XR Core Utils | `com.unity.xr.core-utils` 2.6.0 | XRI 依賴 |
+| XR Management | `com.unity.xr.management` 4.5.4 | XR 外掛管理 |
+| OpenXR Plugin | `com.unity.xr.openxr` 1.17.1 | 頭顯 / OpenXR |
 
-**TextMesh Pro**：S1 用到，来自项目内 `Assets/TextMesh Pro/`（非额外 UPM）。
+**TextMesh Pro**：S1 用到，來自專案內 `Assets/TextMesh Pro/`（非額外 UPM）。
 
-**Repo 内 Sample**（由 XRI Package 导入后保存在 Assets）：
+**Repo 內 Sample**（由 XRI Package 匯入後保存在 Assets）：
 
 - `Assets/Samples/XR Interaction Toolkit/3.5.1/Starter Assets/` — XR Origin (XR Rig)
-- `Assets/Samples/XR Interaction Toolkit/3.5.1/XR Interaction Simulator/` — Editor 模拟 VR（S1 使用）
+- `Assets/Samples/XR Interaction Toolkit/3.5.1/XR Interaction Simulator/` — Editor 模擬 VR（S1 使用）
 
 ### S1_TwoFutures
 
-- UGUI + TextMesh Pro：开场 UI
-- XRI `TrackedDeviceGraphicRaycaster`：XR 射线点 UI
-- XR Interaction Simulator：Editor 内测试
-- 自写脚本：`SceneFlowController`、`ObjectRotator`、`DelayedShow`
+- UGUI + TextMesh Pro：開場 UI
+- XRI `TrackedDeviceGraphicRaycaster`：XR 射線點 UI
+- XR Interaction Simulator：Editor 內測試
+- 自寫腳本：`SceneFlowController`、`ObjectRotator`、`DelayedShow`
 
 ### ForestBasic
 
-- **AI Navigation** `com.unity.ai.navigation` 2.0.14：`NavMeshSurface`、动物巡逻
-- XRI `XRSimpleInteractable`：点选动物 / 物件
-- XRI `XRGrabInteractable`：浇水壶、斧头等（Prefab 内）
-- UGUI：InfoPopup、PauseMenu、关卡选择 UI
-- Unity Terrain 模块：地形
+- **AI Navigation** `com.unity.ai.navigation` 2.0.14：`NavMeshSurface`、動物巡邏
+- XRI `XRSimpleInteractable`：點選動物 / 物件
+- XRI `XRGrabInteractable`：澆水壺、斧頭等（Prefab 內）
+- UGUI：InfoPopup、PauseMenu、關卡選擇 UI
+- Unity Terrain 模組：地形
 
-### 打包 / 上机额外 Package（按平台）
+### 打包 / 上機額外 Package（依平台）
 
-| Package | 何时需要 |
+| Package | 何時需要 |
 |---------|----------|
-| `com.unity.xr.meta-openxr` 2.5.0 | Quest / Meta 头显 |
-| `com.unity.xr.androidxr-openxr` 1.3.1 | Android XR 设备 |
+| `com.unity.xr.meta-openxr` 2.5.0 | Quest / Meta 頭顯 |
+| `com.unity.xr.androidxr-openxr` 1.3.1 | Android XR 裝置 |
 
-Editor 用 XR Interaction Simulator 测试时，不一定需要 Meta / Android XR Package。
+Editor 用 XR Interaction Simulator 測試時，不一定需要 Meta / Android XR Package。
 
-### manifest 内有，但 S1 / ForestBasic 基本不用
+### manifest 內有，但 S1 / ForestBasic 基本不用
 
 HDRP、AR Foundation、XR Hands、ProBuilder、Timeline、Visual Scripting、IDE / Collab 等。
 
-### 最小依赖清单（`Packages/manifest.json` 核心）
+### 最小依賴清單（`Packages/manifest.json` 核心）
 
 ```json
 "com.unity.render-pipelines.universal": "17.5.0",
@@ -188,7 +188,7 @@ HDRP、AR Foundation、XR Hands、ProBuilder、Timeline、Visual Scripting、IDE
 ## 分支說明
 
 - 工作分支：`jiafu`
-- repo 已含 `ForestAnimals`、`GreenForest`、UI、地形与 XRI Sample
+- repo 已含 `ForestAnimals`、`GreenForest`、UI、地形與 XRI Sample
 
 ```bash
 git checkout jiafu
@@ -199,8 +199,8 @@ git pull origin jiafu
 
 ## 常見問題
 
-**S1 进不了 ForestBasic**  
-确认 Build Settings 有勾 `ForestBasic`，且 S1 的 `SceneFlowController.nextSceneName` 为 `ForestBasic`。
+**S1 進不了 ForestBasic**  
+確認 Build Settings 有勾 `ForestBasic`，且 S1 的 `SceneFlowController.nextSceneName` 為 `ForestBasic`。
 
 **熊點不到**  
 檢查 Box Collider、XR Simple Interactable；Colliders 列表不要留空參考。
