@@ -20,7 +20,7 @@ S1_TwoFutures  →  S2_RegionSelect  →  City01
 | 城市 | `Assets/Scenes/City01.unity` | 城市關 |
 | 森林 | `Assets/Scenes/ForestBasic.unity` | 森林關（地形、互動物、InfoPopup） |
 
-Build Settings 已啟用：`S1`、`S2`、`City01`、`ForestBasic`。
+Build Settings 已啟用：`S1`、`ForestBasic`（S1 直接進森林關）。
 
 區域跳轉腳本：`Assets/Script/RegionSelectController.cs`  
 - 城市 → `City01`  
@@ -28,21 +28,18 @@ Build Settings 已啟用：`S1`、`S2`、`City01`、`ForestBasic`。
 
 ---
 
-## 本機需要的素材包（未進 git）
+## 本機可能仍需要的素材包（未進 git）
 
-`jiafu` 分支為控制體積，**大型 Asset Store 素材包未上傳**。若 `ForestBasic` 出現 Missing Prefab／粉紅材質，請在本機補齊並放回對應路徑：
+`ForestAnimals`、`GreenForest` 已在 repo 內。若仍有 Missing Prefab／粉紅材質，可再補以下素材：
 
 | 資料夾 | 用途 |
 |--------|------|
-| `Assets/ForestAnimals/` | 熊等動物模型 |
 | `Assets/Tree_Packs/` | URP 樹模型 |
-| `Assets/GreenForest/` | 森林相關資源／舊 PostProcessing |
 | `Assets/ALP_Assets/` | 地形貼圖等 |
 | `Assets/NatureManufacture Assets/` | 自然場景素材 |
-| `Assets/Grass And Flowers Pack 1/` | 草與花 |
 | `Assets/Blue Polygon/` | 場景物件 |
 
-已上傳的場景／腳本／`New Terrain 6.asset` 可直接用；缺的是模型與貼圖本體。
+`Grass And Flowers Pack 1` 等部分環境包已在 repo 內。
 
 ---
 
